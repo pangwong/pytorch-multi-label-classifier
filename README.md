@@ -1,10 +1,10 @@
 # pytorch-multi-label-classifier
 
+### Introdution
+***
 
-#### Introdution
----
 A [pytorch](https://github.com/pytorch/pytorch) implemented classifier for Multiple-Label classification. 
-You can easily ```train```, ```test``` and ```visualize``` your multi-label classification model.
+You can easily ```train```, ```test``` and ```visualize``` your multi-label classification model. Below is an example visualizing the training of one-label classifier. If you have more than one attributes, no doubt than all the loss and accuracy curves of each attribute will show on web browser orderly.
 
 ### Module
 ***
@@ -24,11 +24,9 @@ You can easily ```train```, ```test``` and ```visualize``` your multi-label clas
 - [ ] Snapshot loss and accuracy recode
 - [ ] Support visualize multi top K accuracy
 - [ ] Support model finetuning
+- [ ] Complete test script
 
-### Example
-***
 
- 
 ### Reference
 ***
 Some of codes and models refer to other OSS listed belows for thanks:
