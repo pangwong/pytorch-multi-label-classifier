@@ -1,6 +1,6 @@
 # pytorch-multi-label-classifier
 
-### Introdution
+## Introdution
 ***
 
 A [pytorch](https://github.com/pytorch/pytorch) implemented classifier for Multiple-Label classification. 
@@ -11,7 +11,7 @@ Loss             |  Accuracy
 :-------------------------:|:-------------------------:
 ![](https://user-images.githubusercontent.com/7804678/38625748-bfdd53d2-3ddd-11e8-8993-8b1e7635e00e.png)  |  ![](https://user-images.githubusercontent.com/7804678/38625746-be8c3962-3ddd-11e8-87a0-3fbbaa1e2ee0.png)
 
-### Module
+## Module
 ***
 - ### data
   data preparation module consisting of reading and transforming data. All data store in ```a.txt```and ```label.txt``` with some predefined format.
@@ -24,7 +24,7 @@ Loss             |  Accuracy
   - util: miscellaneous used in project
   - html: used in webvisualizer.
 
-### TODO
+## TODO
 ***
 - [ ] Snapshot loss and accuracy recode
 - [ ] Support visualize multi top K accuracy
@@ -32,7 +32,7 @@ Loss             |  Accuracy
 - [ ] Complete test script
 
 
-### Reference
+## Reference
 ***
 Part of codes and models refer to some other OSS listed belows for thanks:
 - [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)
