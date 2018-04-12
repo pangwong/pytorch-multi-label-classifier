@@ -1,2 +1,5 @@
-/test
+test/mnist/label.txt.*
+test/mnist/data.txt.*
+test/mnist/trainer_test1
+test/celeba/data.txt.*
 *pyc

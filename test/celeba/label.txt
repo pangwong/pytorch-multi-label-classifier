@@ -1,0 +1,12 @@
+2;gender;gender
+male;male
+female;female
+2;is_wearing_glasses;is_wearing_glasses
+yes_glass;wearing_glasses
+no_glass;not_wearing_glasses
+2;is_wearing_hat;is_wearing_hat
+yes_hat;wearing_hat
+no_hat;not_wearing_hat
+2;is_smiling;is_smiling
+smiling;smiling
+not_smiling;not_smiling
