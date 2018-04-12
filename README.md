@@ -28,16 +28,17 @@ Loss             |  Accuracy
 Data Format Explanation. 
 - ```label.txt```
 
-  Store attribute value and its name of each multi-label attribute. [label.txt example](https://github.com/pangwong/pytorch-multi-label-classifier/blob/master/test/celeba/label.txt). Lines stack as follows: 
+  Store attribute information including its name and value. [label.txt example](https://github.com/pangwong/pytorch-multi-label-classifier/blob/master/test/celeba/label.txt). Lines in ```label.txt``` stack as follows: 
   
   > - For each ```attribute``` :
   >   - ```number of attribute values``` ; ```id of attribute``` ; ```name attribute``` 
   >   - For each ```attribute value``` belonging to current ```attribute``` :
   >     - ```id of attibute_value``` ; ```name of attribute value```
   >
+  Note: mind the difference between attribute and attribute value.
 - ```data.txt``` 
 
-  Store objects information including attribute id and bounding box and so on. Each line is one json String. [data.txt example](https://github.com/pangwong/pytorch-multi-label-classifier/blob/master/test/celeba/data.txt)
+  Store objects information including attribute id and bounding box and so on. Each line is one json dict recording one object. [data.txt example](https://github.com/pangwong/pytorch-multi-label-classifier/blob/master/test/celeba/data.txt)
   
   >
   > - ```"box"```:object boundingbox. ```'x'```: top_left.x , ```'y'```:top_left.y, ```'w'```: width of box, ```'h'```: height of box.
