@@ -45,7 +45,7 @@ Data Format Explanation.
   > - ```"image_id"```: image identifier. An image content dependent hash value.
   > - ```"box_id"```: object identidier. Combine ```image_id```, ```box['x']```, ```box['y']```, ```box['w']```, ```box["h"]``` with ```_```.
   > - ```"size"```: image width and height. Used for varifying whether box is valid. 
-  > - ```"id"```: list of ids. Store multi-label attributes ids, the order is the same as 
+  > - ```"id"```: list of ids. Store multi-label attributes ids, the order is the same as the attributes' order in ```label.txt```
 
 ## Dependence
 
