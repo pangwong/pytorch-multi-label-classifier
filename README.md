@@ -32,6 +32,11 @@ Loss             |  Accuracy
 - [ ] Complete test module
 
 
+## Dependence
+***
+- Visdom
+- Pytorch
+
 ## Reference
 ***
 Part of codes and models refer to some other OSS listed belows for thanks:
