@@ -12,16 +12,19 @@ Loss             |  Accuracy
 
 ## Module
 
-- ### data
+- ### ```data```
   data preparation module consisting of reading and transforming data. All data store in ```data.txt```and ```label.txt``` with some predefined format explained below.
-- ### model
+- ### ```model```
   scripts to build multi-label classifier model. Your model templets should put here.
-- ### options
+- ### ```options```
   train test and visualization options define here
-- ### util
-  - webvisualizer: a [visdom](https://github.com/facebookresearch/visdom) based visualization tool for visualizing loss and accuracy of each attribute
-  - util: miscellaneous functions used in project
-  - html: used in webvisualizer.
+- ### ```util```
+  - ```webvisualizer```: a [visdom](https://github.com/facebookresearch/visdom) based visualization tool for visualizing loss and accuracy of each attribute
+  - ```util```: miscellaneous functions used in project
+  - ```html```: used in webvisualizer.
+- ### ```test``` 
+  - ```mnist```: [mnist](http://yann.lecun.com/exdb/mnist/) dataset arranged as defined data format.
+  - ```celeba```: exactract some of attributes of [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
 
 ## Multi-Label Data Format
 
