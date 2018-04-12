@@ -20,7 +20,7 @@ Loss             |  Accuracy
   train test and visualization options define here
 - ### util
   - webvisualizer: a [visdom](https://github.com/facebookresearch/visdom) based visualization tool for visualizing loss and accuracy of each attribute
-  - util: miscellaneous used in project
+  - util: miscellaneous functions used in project
   - html: used in webvisualizer.
 
 ## Multi-Label Data Format
