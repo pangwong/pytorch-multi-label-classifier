@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#python train.py --dir "./test/celeba/" --mode "Train" --name "test" --batch_size 8 --gpu_ids 0,1
+python train.py --dir "./test/mnist/" --mode "Train" --name "test1" --batch_size 16 --gpu_ids 7 --input_channel 1 --load_size 144 --input_size 128 --mean [0] --std [1] --display_validate_freq 50 --display_train_freq 10 --display_data_freq 10 --ratio "[0.95, 0.005,0.045]" --score_thres 0.1 --top_k "(1,2)" --display_port 8900 --validate_ratio 0.1 --shuffle --sum_epoch 50 --save_epoch_freq 1 
 
-#python train.py --dir "./test/mnist/" --mode "Train" --name "test1" --batch_size 16 --gpu_ids 7 --input_channel 1 --load_size 144 --input_size 128 --mean [0] --std [1] --display_validate_freq 50 --display_train_freq 10 --display_data_freq 10 --ratio "[0.95, 0.005,0.045]" --score_thres 0.1 --top_k "(1,2)" --display_port 8900 --validate_ratio 0.1 
 
-#python train.py --dir "/data/image_server/extra/tasks/gan_expr/mask_classification/" --mode "Train" --name "mask_class_0407" --batch_size 128 --gpu_ids 4,5 --input_channel 3 --load_size 144 --input_size 128 --mean [0] --std [1] --ratio "[0.94, 0.03, 0.03]" --shuffle --load_thread 8 --sum_epoch 100  
-
-python train.py --dir "/data/image_server/extra/tasks/gan_expr/mask_classification/" --mode "Train" --name "mask_class_0411" --batch_size 128 --gpu_ids 6,7 --input_channel 3 --load_size 144 --input_size 128 --mean [0] --std [1] --ratio "[0.94, 0.03, 0.03]" --shuffle --load_thread 8 --sum_epoch 50 --save_epoch_freq 1 --display_port 8097
