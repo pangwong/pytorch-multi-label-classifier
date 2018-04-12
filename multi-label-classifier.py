@@ -130,12 +130,15 @@ def main():
     webvis = WebVisualizer(opt)
 
     # load train data
-    opt.mode == "Train"
     data_loader = MultiLabelDataLoader(opt)
-    train_set = data_loader.GetTrainSet()
-    val_set = data_loader.GetValSet()
+    if opt.mode == "Train":
+        train_set = data_loader.GetTrainSet()
+        val_set = data_loader.GetValSet()
+    elif opt.mode == "Test":
+        test_set = data_loader.GetTestSet()
+
     num_classes = data_loader.GetNumClasses()
-    batch_number = len(train_set)
+    train_batch_num = len(train_set)
 
     # load model
     templet = LightCNN_29Layers_v2_templet(opt.input_channel) 
@@ -191,7 +194,7 @@ def main():
                 util.print_loss(loss_list, "Train", epoch, total_batch_iter)
                 util.print_accuracy(batch_accuracy, "Train", epoch, total_batch_iter)
                 if opt.display_id > 0:
-                    x_axis = epoch + float(epoch_batch_iter)/batch_number
+                    x_axis = epoch + float(epoch_batch_iter)/train_batch_num
                     # TODO support multiple top_k
                     plot_accuracy = [batch_accuracy[i][opt.top_k[0]] for i in range(len(batch_accuracy)) ]
                     accuracy_list = [item["ratio"] for item in plot_accuracy]
@@ -211,7 +214,7 @@ def main():
             # validate and display validate loss and accuracy
             if total_batch_iter % opt.display_validate_freq == 0:
                 val_accuracy, val_loss = validate(model, criterion, val_set, opt)
-                x_axis = epoch + float(epoch_batch_iter)/batch_number
+                x_axis = epoch + float(epoch_batch_iter)/train_batch_num
                 accuracy_list = [val_accuracy[i][opt.top_k[0]]["ratio"] for i in range(len(val_accuracy))]
                 util.print_loss(val_loss, "Validate", epoch, total_batch_iter)
                 util.print_accuracy(val_accuracy, "Validate", epoch, total_batch_iter)
