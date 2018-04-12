@@ -26,10 +26,10 @@ Loss             |  Accuracy
 
 ## TODO
 ***
-- [ ] Snapshot loss and accuracy recode
+- [ ] Snapshot loss and accuracy records
 - [ ] Support visualize multi top K accuracy
 - [ ] Support model finetuning
-- [ ] Complete test script
+- [ ] Complete test module
 
 
 ## Reference
