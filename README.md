@@ -30,6 +30,7 @@ Loss             |  Accuracy
 - [ ] Support visualize multi top K accuracy
 - [ ] Support model finetuning
 - [ ] Complete test module
+- [ ] Add switch to control loss and accuracy curves displaying on one plot or multiple
 
 
 ## Dependence
