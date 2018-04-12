@@ -1,7 +1,6 @@
 # pytorch-multi-label-classifier
 
 ## Introdution
-***
 
 A [pytorch](https://github.com/pytorch/pytorch) implemented classifier for Multiple-Label classification. 
 You can easily ```train```, ```test``` your multi-label classification model and ```visualize``` the training process.  
@@ -12,9 +11,9 @@ Loss             |  Accuracy
 ![](https://user-images.githubusercontent.com/7804678/38625748-bfdd53d2-3ddd-11e8-8993-8b1e7635e00e.png)  |  ![](https://user-images.githubusercontent.com/7804678/38625746-be8c3962-3ddd-11e8-87a0-3fbbaa1e2ee0.png)
 
 ## Module
-***
+
 - ### data
-  data preparation module consisting of reading and transforming data. All data store in ```a.txt```and ```label.txt``` with some predefined format.
+  data preparation module consisting of reading and transforming data. All data store in ```data.txt```and ```label.txt``` with some predefined format explained below.
 - ### model
   scripts to build multi-label classifier model. Your model templets should put here.
 - ### options
@@ -24,8 +23,37 @@ Loss             |  Accuracy
   - util: miscellaneous used in project
   - html: used in webvisualizer.
 
+## Multi-Label Data Format
+
+Data Format Explanation. 
+- ```label.txt```
+
+  Store attribute value and its name of each multi-label attribute. [label.txt example](https://github.com/pangwong/pytorch-multi-label-classifier/blob/master/test/celeba/label.txt). Lines stack as follows: 
+  
+  > - For each ```attribute``` :
+  >   - ```number of attribute values``` ; ```id of attribute``` ; ```name attribute``` 
+  >   - For each ```attribute value``` belonging to current ```attribute``` :
+  >     - ```id of attibute_value``` ; ```name of attribute value```
+  >
+- ```data.txt``` 
+
+  Store objects information including attribute id and bounding box and so on. Each line is one json String. [data.txt example](https://github.com/pangwong/pytorch-multi-label-classifier/blob/master/test/celeba/data.txt)
+  
+  >
+  > - ```"box"```:object boundingbox. ```'x'```: top_left.x , ```'y'```:top_left.y, ```'w'```: width of box, ```'h'```: height of box.
+  > - ```"image_id"```: image identifier. An image content dependent hash value.
+  > - ```"box_id"```: object identidier. Combine ```image_id```, ```box['x']```, ```box['y']```, ```box['w']```, ```box["h"]``` with ```_```.
+  > - ```"size"```: image width and height. Used for varifying whether box is valid. 
+  > - ```"id"```: list of ids. Store multi-label attributes ids, the order is the same as 
+
+## Dependence
+
+- Visdom
+- Pytorch
+
+
 ## TODO
-***
+
 - [ ] Snapshot loss and accuracy records
 - [ ] Support visualize multi top K accuracy
 - [ ] Support model finetuning
@@ -33,13 +61,8 @@ Loss             |  Accuracy
 - [ ] Add switch to control loss and accuracy curves displaying on one plot or multiple
 
 
-## Dependence
-***
-- Visdom
-- Pytorch
-
 ## Reference
-***
+
 Part of codes and models refer to some other OSS listed belows for thanks:
 - [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)
 - [pytorch-LightCNN](https://github.com/AlfredXiangWu/LightCNN)
