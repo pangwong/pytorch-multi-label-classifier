@@ -60,8 +60,8 @@ Data Format Explanation.
 
 - [ ] Snapshot loss and accuracy records
 - [ ] Support visualize multi top K accuracy
-- [ ] Support model finetuning
-- [ ] Complete test module
+- [x] Support model finetuning
+- [x] Complete test module
 - [ ] Add switch to control loss and accuracy curves displaying on one plot or multiple
 - [ ] Train and Test Log
 
