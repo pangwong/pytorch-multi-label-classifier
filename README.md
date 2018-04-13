@@ -12,16 +12,19 @@ Loss             |  Accuracy
 
 ## Module
 
-- ### data
+- ### ```data```
   data preparation module consisting of reading and transforming data. All data store in ```data.txt```and ```label.txt``` with some predefined format explained below.
-- ### model
+- ### ```model```
   scripts to build multi-label classifier model. Your model templets should put here.
-- ### options
+- ### ```options```
   train test and visualization options define here
-- ### util
-  - webvisualizer: a [visdom](https://github.com/facebookresearch/visdom) based visualization tool for visualizing loss and accuracy of each attribute
-  - util: miscellaneous functions used in project
-  - html: used in webvisualizer.
+- ### ```util```
+  - ```webvisualizer```: a [visdom](https://github.com/facebookresearch/visdom) based visualization tool for visualizing loss and accuracy of each attribute
+  - ```util```: miscellaneous functions used in project
+  - ```html```: used in webvisualizer.
+- ### ```test``` 
+  - ```mnist```: [mnist](http://yann.lecun.com/exdb/mnist/) dataset arranged as defined data format.
+  - ```celeba```: exactract some of attributes of [CelebA dataset](http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html)
 
 ## Multi-Label Data Format
 
@@ -45,7 +48,7 @@ Data Format Explanation.
   > - ```"image_id"```: image identifier. An image content dependent hash value.
   > - ```"box_id"```: object identidier. Combine ```image_id```, ```box['x']```, ```box['y']```, ```box['w']```, ```box["h"]``` with ```_```.
   > - ```"size"```: image width and height. Used for varifying whether box is valid. 
-  > - ```"id"```: list of ids. Store multi-label attributes ids, the order is the same as 
+  > - ```"id"```: list of ids. Store multi-label attributes ids, the order is the same as the attributes' order in ```label.txt```
 
 ## Dependence
 
@@ -60,6 +63,7 @@ Data Format Explanation.
 - [ ] Support model finetuning
 - [ ] Complete test module
 - [ ] Add switch to control loss and accuracy curves displaying on one plot or multiple
+- [ ] Train and Test Log
 
 
 ## Reference
