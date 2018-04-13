@@ -61,9 +61,9 @@ class MultiLabelDataLoader():
             self.val_set = BaseDataset(self.opt, "ValidateSet", self.label2id)
         else:
             # force batch_size for test to 1
-            opt.batch_size = 1
-            opt.load_thread = 1
-            self.test_set = BaseDataset(test_dir, "TestSet", self.label2id)
+            self.opt.batch_size = 1
+            self.opt.load_thread = 1
+            self.test_set = BaseDataset(self.opt, "TestSet", self.label2id)
 
 
     def _WriteDataToFile(self, src_data, dst_dir):
@@ -75,8 +75,6 @@ class MultiLabelDataLoader():
 
 
     def _DataLoader(self, dataset):
-        # TODO add sampler to balance attributes
-
         dataloader = DataLoader(
             dataset,
             batch_size=self.opt.batch_size,

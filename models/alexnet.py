@@ -70,7 +70,6 @@ class AlexNetTemplet(nn.Module):
             nn.Dropout(),
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
-            #nn.Linear(4096, num_classes),
         )
 
     def forward(self, x):
@@ -78,7 +77,6 @@ class AlexNetTemplet(nn.Module):
         x = x.view(x.size(0), 256 * 6 * 6)
         x = self.classifier(x)
         return x
-
 
 
 def alexnet(pretrained=False, **kwargs):

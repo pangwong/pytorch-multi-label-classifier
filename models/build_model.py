@@ -6,7 +6,7 @@ class MultiLabelModel(nn.Module):
         self.basemodel = basemodel
         self.num_classes = num_classes
         for index, num_class in enumerate(num_classes):
-            setattr(self, "FullyConnectedLayer_" + str(index), nn.Linear(basemodel_output, num_class, bias=False))
+            setattr(self, "FullyConnectedLayer_" + str(index), nn.Linear(basemodel_output, num_class))
     
     def forward(self, x):
         x = self.basemodel.forward(x)

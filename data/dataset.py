@@ -13,6 +13,7 @@ class BaseDataset(data.Dataset):
     def __init__(self, opt, data_type, label2id):
         super(BaseDataset, self).__init__()
         self.opt = opt
+        self.data_type = data_type
         self.dataset = self._load_data(opt.data_dir+ '/' + data_type + '/data.txt')
         self.label2id = label2id
         self.data_size = len(self.dataset)
@@ -54,7 +55,7 @@ class BaseDataset(data.Dataset):
                 line = json.loads(line)
                 dataset.append(self._read(line))
         if self.opt.shuffle:
-            print "Shuffle Data"
+            print "Shuffle %s Data" %(self.data_type)
             random.shuffle(dataset)
         return dataset
     

@@ -60,13 +60,21 @@ def rmdir(path):
     if os.path.exists(path):
         os.system('rm -rf ' + path)
 
-def print_loss(loss_list, label, epoch, batch_iter):
-    for index, loss in enumerate(loss_list):
+def print_loss(loss_list, label, epoch=0, batch_iter=0):
+    if label == "Test":
+        print("[ %s Loss ] of Test Dataset:" % (label))
+    else:
         print("[ %s Loss ] of Epoch %d Batch %d" % (label, epoch, batch_iter))
+    
+    for index, loss in enumerate(loss_list):
         print("----Attribute %d:  %f" %(index, loss))
 
-def print_accuracy(accuracy_list, label, epoch, batch_iter):
-    for index, item in enumerate(accuracy_list):
+def print_accuracy(accuracy_list, label, epoch=0, batch_iter=0):
+    if label == "Test":
+        print("[ %s Accuracy ] of Test Dataset:" % (label))
+    else:
         print("[ %s Accuracy ] of Epoch %d Batch %d" %(label, epoch, batch_iter))
+    
+    for index, item in enumerate(accuracy_list):
         for top_k, value in item.iteritems():
             print("----Attribute %d Top%d: %f" %(index, top_k, value["ratio"]))
