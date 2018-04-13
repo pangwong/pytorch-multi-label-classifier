@@ -63,6 +63,7 @@ Data Format Explanation.
 - [ ] Support model finetuning
 - [ ] Complete test module
 - [ ] Add switch to control loss and accuracy curves displaying on one plot or multiple
+- [ ] Train and Test Log
 
 
 ## Reference
