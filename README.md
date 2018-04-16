@@ -68,6 +68,6 @@ Data Format Explanation.
 
 ## Reference
 
-Part of codes and models refer to some other OSS listed belows for thanks:
+Part of codes and models refer to some other OSS listed below for thanks:
 - [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)
 - [pytorch-LightCNN](https://github.com/AlfredXiangWu/LightCNN)
