@@ -52,8 +52,8 @@ Data Format Explanation.
 
 ## Dependence
 
-- Visdom
-- Pytorch
+- Visdom 0.1.7.2
+- Pytorch 0.3.1.post2
 
 
 ## TODO
