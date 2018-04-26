@@ -60,14 +60,14 @@ Data Format Explanation.
 
 - [ ] Snapshot loss and accuracy records
 - [ ] Support visualize multi top K accuracy
-- [ ] Support model finetuning
-- [ ] Complete test module
+- [x] Support model finetuning
+- [x] Complete test module
 - [ ] Add switch to control loss and accuracy curves displaying on one plot or multiple
 - [ ] Train and Test Log
 
 
 ## Reference
 
-Part of codes and models refer to some other OSS listed belows for thanks:
+Part of codes and models refer to some other OSS listed below for thanks:
 - [pytorch-CycleGAN-and-pix2pix](https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix)
 - [pytorch-LightCNN](https://github.com/AlfredXiangWu/LightCNN)
