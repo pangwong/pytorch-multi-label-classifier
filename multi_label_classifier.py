@@ -22,7 +22,7 @@ def _forward(model, criterion, inputs, targets, opt, phase):
     if opt.cuda:
         inputs = inputs.cuda(opt.devices[0], async=True)
 
-    if phase == "Train":
+    if phase in ["Train"]:
         inputs_var = Variable(inputs, requires_grad=True)
         model.train()
     elif phase in ["Validate", "Test"]:
@@ -142,6 +142,7 @@ def test(model, criterion, test_set, opt):
                 t.write("----Accuracy of Top%d: %f\n" %(top_k, value["ratio"]))  
     print "#################Finished Testing################"
 
+
 def train(model, criterion, train_set, val_set, opt):
     # define web visualizer using visdom
     webvis = WebVisualizer(opt)
@@ -232,6 +233,25 @@ def train(model, criterion, train_set, val_set, opt):
         lr = optimizer.param_groups[0]['lr'] 
         print('learning rate = %.7f' % lr, 'epoch = %d' %(epoch)) 
 
+def _load_model(opt, num_classes):
+    # load model
+    templet = LightCNN_29Layers_v2_templet(opt.input_channel) 
+    #templet = AlexNetTemplet(opt.input_channel)
+    tmp_input = Variable(torch.FloatTensor(1, opt.input_channel, opt.input_size, opt.input_size))
+    tmp_output = templet(tmp_input)
+    output_dim = int(tmp_output.size()[-1])
+    model = BuildMultiLabelModel(templet, output_dim, num_classes)
+    print model
+    
+    # load exsiting model
+    if opt.checkpoint_name != "":
+        if os.path.exists(opt.checkpoint_name):
+            model.load_state_dict(torch.load(opt.checkpoint_name))
+        else:
+            model.load_state_dict(torch.load(opt.model_dir + "/" + opt.checkpoint_name))
+    return model
+
+
 def _modify_last_layer_lr(named_params, base_lr, lr_mult_w, lr_mult_b):
     params = list()
     for name, param in named_params: 
@@ -264,20 +284,7 @@ def main():
     num_classes = data_loader.GetNumClasses()
 
     # load model
-    templet = LightCNN_29Layers_v2_templet(opt.input_channel) 
-    #templet = AlexNetTemplet(opt.input_channel)
-    tmp_input = Variable(torch.FloatTensor(1, opt.input_channel, opt.input_size, opt.input_size))
-    tmp_output = templet(tmp_input)
-    output_dim = int(tmp_output.size()[-1])
-    model = BuildMultiLabelModel(templet, output_dim, num_classes)
-    print model
-    
-    # load exsiting model
-    if opt.checkpoint_name != "":
-        if os.path.exists(opt.checkpoint_name):
-            model.load_state_dict(torch.load(opt.checkpoint_name))
-        else:
-            model.load_state_dict(torch.load(opt.model_dir + "/" + opt.checkpoint_name))
+    model = _load_model(opt, num_class)
 
     # define loss function
     criterion = nn.CrossEntropyLoss(weight=opt.loss_weight) 

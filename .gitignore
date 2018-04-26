@@ -1,6 +1,11 @@
 test/mnist/label.txt.*
 test/mnist/data.txt.*
 test/mnist/trainer_test1
+test/mnist/trainer_test_0413/
 test/celeba/data.txt.*
+test/visual/
+visual/
+visualActivate/
+visual_grad.py
 run
 *pyc

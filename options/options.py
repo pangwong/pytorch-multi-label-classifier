@@ -88,11 +88,8 @@ class Options():
         # mode
         if opt.mode not in ["Train", "Test", "train", "test"]:
             raise Exception("cannot recognize flag `mode`")
-        if opt.mode in ['train', "Train"]:
-            opt.mode = "Train"
-        if opt.mode in ['test', 'Test']:
-            opt.mode = "Test"
-        
+        opt.mode = opt.mode.capitalize()
+
         opt.top_k = eval(opt.top_k)
         opt.mean = eval(opt.mean)
         opt.std = eval(opt.std)
