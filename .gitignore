@@ -2,10 +2,9 @@ test/mnist/label.txt.*
 test/mnist/data.txt.*
 test/mnist/trainer_test1
 test/mnist/trainer_test_0413/
-test/celeba/data.txt.*
+test/celeba/trainer_test/
 test/visual/
 visual/
-visualActivate/
-visual_grad.py
+test_batch_cam.py
 run
-*pyc
+*.pyc

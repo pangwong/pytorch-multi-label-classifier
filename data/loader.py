@@ -52,67 +52,24 @@ class MultiLabelDataLoader():
             self._WriteDataToFile(dataset["Validate"], val_dir)
             self._WriteDataToFile(dataset["Test"], test_dir)
         
-        self.label2id = self._LoadLabel(opt.dir + '/label.txt')
-        self.num_classes = [len(labels)-2 for labels in self.label2id]
+        self.rid2name, self.id2rid, self.rid2id = self._LoadLabel(opt.dir + '/label.txt')
+        self.num_classes = [len(item)-2 for item in self.rid2name]
         
         # load dataset
         if opt.mode == "Train": 
-            self.train_set = BaseDataset(self.opt, "TrainSet", self.label2id)
-            self.val_set = BaseDataset(self.opt, "ValidateSet", self.label2id)
+            self.train_set = BaseDataset(self.opt, "TrainSet", self.rid2id)
+            self.val_set = BaseDataset(self.opt, "ValidateSet", self.rid2id)
         else:
             # force batch_size for test to 1
             self.opt.batch_size = 1
             self.opt.load_thread = 1
-            self.test_set = BaseDataset(self.opt, "TestSet", self.label2id)
-
-
-    def _WriteDataToFile(self, src_data, dst_dir):
-        if not osp.exists(dst_dir):
-            os.mkdir(dst_dir)
-        with open(dst_dir + "/data.txt", 'w') as d:
-            for line in src_data:
-                d.write(json.dumps(line, separators=(',',':'))+'\n')
-
-
-    def _DataLoader(self, dataset):
-        dataloader = DataLoader(
-            dataset,
-            batch_size=self.opt.batch_size,
-            shuffle=self.opt.shuffle,
-            num_workers=int(self.opt.load_thread), 
-            pin_memory=self.opt.cuda,
-            drop_last=False)
-        return dataloader
-
-
-    def _LoadLabel(self, label_file):
-        label2id = list()
-        with open(label_file) as l:
-            label_dict = collections.defaultdict(int)
-            new_id = 0 
-            for line in l.readlines():
-                line = line.strip('\n\r').split(';')
-                if len(line) == 3: # attr description
-                    if len(label_dict) != 0:
-                        label2id.append(label_dict)
-                        label_dict = collections.defaultdict(int)
-                        new_id = 0
-                    label_dict["__name__"] = line[2]
-                    label_dict["__attr_id__"] = line[1]
-                elif len(line) == 2: # attr value description
-                    label_dict[line[0]] = (line[1], new_id)
-                    new_id += 1
-            if len(label_dict) != 0:
-                label2id.append(label_dict)
-        return label2id
-
+            self.test_set = BaseDataset(self.opt, "TestSet", self.rid2id)
 
     def GetTrainSet(self):
         if self.opt.mode == "Train":
             return self._DataLoader(self.train_set)
         else:
             raise("Train Set DataLoader NOT implemented in Test Mode")
-
 
     def GetValSet(self):
         if self.opt.mode == "Train":
@@ -129,5 +86,72 @@ class MultiLabelDataLoader():
     def GetNumClasses(self):
         return self.num_classes
     
-    def GetLabel2Id():
-        return self.label2id
+    def GetRID2Name(self):
+        return self.rid2name
+    
+    def GetID2RID(self):
+        return self.id2rid
+    
+    def GetiRID2ID(self):
+        return self.irid2id
+
+    def _WriteDataToFile(self, src_data, dst_dir):
+        """
+            write info of each objects to data.txt as predefined format
+        """
+        if not osp.exists(dst_dir):
+            os.mkdir(dst_dir)
+        with open(dst_dir + "/data.txt", 'w') as d:
+            for line in src_data:
+                d.write(json.dumps(line, separators=(',',':'))+'\n')
+
+
+    def _DataLoader(self, dataset):
+        """
+            create data loder
+        """
+        dataloader = DataLoader(
+            dataset,
+            batch_size=self.opt.batch_size,
+            shuffle=self.opt.shuffle,
+            num_workers=int(self.opt.load_thread), 
+            pin_memory=self.opt.cuda,
+            drop_last=False)
+        return dataloader
+
+
+    def _LoadLabel(self, label_file):
+        """
+            parse label.txt as predefined format
+        """
+        rid2name = list()   # rid: real id, same as the id in label.txt
+        id2rid = list()     # id: number from 0 to len(rids)-1 corresponding to the order of rids
+        rid2id = list()     
+        with open(label_file) as l:
+            rid2name_dict = collections.defaultdict(str)
+            id2rid_dict = collections.defaultdict(str)
+            rid2id_dict = collections.defaultdict(str)
+            new_id = 0 
+            for line in l.readlines():
+                line = line.strip('\n\r').split(';')
+                if len(line) == 3: # attr description
+                    if len(rid2name_dict) != 0:
+                        rid2name.append(rid2name_dict)
+                        id2rid.append(id2rid_dict)
+                        rid2id.append(rid2id_dict)
+                        rid2name_dict = collections.defaultdict(str)
+                        id2rid_dict = collections.defaultdict(str)
+                        rid2id_dict = collections.defaultdict(str)
+                        new_id = 0
+                    rid2name_dict["__name__"] = line[2]
+                    rid2name_dict["__attr_id__"] = line[1]
+                elif len(line) == 2: # attr value description
+                    rid2name_dict[line[0]] = line[1]
+                    id2rid_dict[new_id] = line[0]
+                    rid2id_dict[line[0]] = new_id
+                    new_id += 1
+            if len(rid2name_dict) != 0:
+                rid2name.append(rid2name_dict)
+                id2rid.append(id2rid_dict)
+                rid2id.append(rid2id_dict)
+        return rid2name, id2rid, rid2id

@@ -2,6 +2,7 @@ import os
 import time
 import copy
 import random
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -142,13 +143,13 @@ def test(model, criterion, test_set, opt):
                 t.write("----Accuracy of Top%d: %f\n" %(top_k, value["ratio"]))  
     print "#################Finished Testing################"
 
-
-def train(model, criterion, train_set, val_set, opt):
+def train(model, criterion, train_set, val_set, opt, labels=None):
     # define web visualizer using visdom
     webvis = WebVisualizer(opt)
     
     # modify learning rate of last layer
-    finetune_params = _modify_last_layer_lr(model.named_parameters(), opt.lr, opt.lr_mult_w, opt.lr_mult_b)
+    finetune_params = _modify_last_layer_lr(model.named_parameters(), 
+                                            opt.lr, opt.lr_mult_w, opt.lr_mult_b)
     # define optimizer
     optimizer = optim.SGD(finetune_params, 
                           opt.lr, 
@@ -158,7 +159,9 @@ def train(model, criterion, train_set, val_set, opt):
     scheduler = optim.lr_scheduler.StepLR(optimizer, 
                                           step_size=opt.lr_decay_in_epoch,
                                           gamma=opt.gamma)
-
+    if labels is not None:
+        rid2name, id2rid = labels
+    
     # record forward and backward times 
     train_batch_num = len(train_set)
     total_batch_iter = 0
@@ -197,12 +200,19 @@ def train(model, criterion, train_set, val_set, opt):
             # display train data 
             if total_batch_iter % opt.display_data_freq == 0:
                 image_list = list()
-                for index in range(inputs.size()[0]): 
+                show_image_num = int(np.ceil(opt.display_image_ratio * inputs.size()[0]))
+                for index in range(show_image_num): 
                     input_im = util.tensor2im(inputs[index])
-                    image_list.append(("Input_"+str(index), input_im))
+                    class_label = "Image_" + str(index) 
+                    if labels is not None:
+                        target_ids = [targets[i][index] for i in range(opt.class_num)]
+                        rids = [id2rid[j][k] for j,k in enumerate(target_ids)]
+                        class_label += "_"
+                        class_label += "#".join([rid2name[j][k] for j,k in enumerate(rids)])
+                    image_list.append((class_label, input_im))
                 image_dict = OrderedDict(image_list)
                 save_result = total_batch_iter % opt.update_html_freq
-                #webvis.plot_images(image_dict, opt.display_id + 2*len(num_classes), epoch, save_result)
+                webvis.plot_images(image_dict, opt.display_id + 2*opt.class_num, epoch, save_result)
             
             # validate and display validate loss and accuracy
             if total_batch_iter % opt.display_validate_freq == 0 and len(val_set) > 0:
@@ -282,9 +292,12 @@ def main():
         test_set = data_loader.GetTestSet()
 
     num_classes = data_loader.GetNumClasses()
+    rid2name = data_loader.GetRID2Name()
+    id2rid = data_loader.GetID2RID()
+    opt.class_num = len(num_classes)
 
     # load model
-    model = _load_model(opt, num_class)
+    model = _load_model(opt, num_classes)
 
     # define loss function
     criterion = nn.CrossEntropyLoss(weight=opt.loss_weight) 
@@ -296,7 +309,7 @@ def main():
     
     if opt.mode == "Train":
         # Train model
-        train(model, criterion, train_set, val_set, opt)
+        train(model, criterion, train_set, val_set, opt, (rid2name, id2rid))
     elif opt.mode == "Test":
         # Test model
         test(model, criterion, test_set, opt)

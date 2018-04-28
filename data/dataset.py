@@ -10,17 +10,17 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 class BaseDataset(data.Dataset):
-    def __init__(self, opt, data_type, label2id):
+    def __init__(self, opt, data_type, id2rid):
         super(BaseDataset, self).__init__()
         self.opt = opt
         self.data_type = data_type
         self.dataset = self._load_data(opt.data_dir+ '/' + data_type + '/data.txt')
-        self.label2id = label2id
+        self.id2rid = id2rid
         self.data_size = len(self.dataset)
         self.transformer = self._get_transformer()
 
     def __getitem__(self, index):
-        image_file, box, attr_labels = self.dataset[index % self.data_size]
+        image_file, box, attr_ids = self.dataset[index % self.data_size]
         img = Image.open(image_file)
         if self.opt.input_channel == 3:
             img = img.convert('RGB')
@@ -38,8 +38,8 @@ class BaseDataset(data.Dataset):
 
         # label
         labels = list()
-        for index, attr_label in enumerate(attr_labels):
-            labels.append(self.label2id[index][attr_label][1])
+        for index, attr_id in enumerate(attr_ids):
+            labels.append(self.id2rid[index][attr_id])
 
         return input, labels
 

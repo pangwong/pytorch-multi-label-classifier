@@ -55,7 +55,8 @@ class Options():
         self.parser.add_argument('--update_html_freq', type=int, default=10, help='frequency of saving training results to html')
         self.parser.add_argument('--display_train_freq', type=int, default=10, help='print train loss and accuracy every $train_freq batches iteration')
         self.parser.add_argument('--display_validate_freq', type=int, default=10, help='test validate dateset every $validate_freq batches iteration')
-        self.parser.add_argument('--display_data_freq', type=int, default=1, help='frequency of showing training data on web browser')
+        self.parser.add_argument('--display_data_freq', type=int, default=10, help='frequency of showing training data on web browser')
+        self.parser.add_argument('--display_image_ratio', type=float, default=1.0, help='ratio of images in a batch showing on web browser')
 
     def parse(self):
         opt = self.parser.parse_args()
