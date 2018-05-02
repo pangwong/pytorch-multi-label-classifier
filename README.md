@@ -4,7 +4,7 @@
 
 A [pytorch](https://github.com/pytorch/pytorch) implemented classifier for Multiple-Label classification. 
 You can easily ```train```, ```test``` your multi-label classification model and ```visualize``` the training process.  
-Below is an example visualizing the training of one-label classifier. If you have more than one attributes, no doubt than all the loss and accuracy curves of each attribute will show on web browser orderly.
+Below is an example visualizing the training of one-label classifier. If you have more than one attributes, no doubt that all the loss and accuracy curves of each attribute will show on web browser orderly.
 
 Loss             |  Accuracy
 :-------------------------:|:-------------------------:
