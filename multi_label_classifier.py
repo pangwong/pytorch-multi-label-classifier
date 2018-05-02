@@ -2,6 +2,7 @@ import os
 import time
 import copy
 import random
+import logging
 import numpy as np
 import torch
 import torch.nn as nn
@@ -96,7 +97,7 @@ def _forward_dataset(model, criterion, data_loader, opt):
             if random.random() > opt.validate_ratio:
                 continue
         if opt.mode == "Test":
-            print "test %s/%s image" %(i, len(data_loader))
+            logging.info("test %s/%s image" %(i, len(data_loader)))
         sum_batch += 1
         inputs, targets = data
         output, loss, loss_list = _forward(model, criterion, inputs, targets, opt, "Validate")
@@ -118,6 +119,7 @@ def _forward_dataset(model, criterion, data_loader, opt):
             for index, loss in enumerate(loss_list):
                 avg_loss[index] += loss
     # average on batches
+    print sum_batch
     for index, item in enumerate(accuracy):
         for k,v in item.iteritems():
             accuracy[index][k]["ratio"] /= float(sum_batch)
@@ -129,19 +131,16 @@ def validate(model, criterion, val_set, opt):
     return _forward_dataset(model, criterion, val_set, opt)
 
 def test(model, criterion, test_set, opt):
-    print "####################Test Model###################"
+    logging.info("####################Test Model###################")
     test_accuracy, test_loss = _forward_dataset(model, criterion, test_set, opt)
-    print "data_dir:   ", opt.data_dir + "/TestSet/"
-    print "state_dict: ", opt.model_dir + "/" + opt.checkpoint_name
-    util.print_loss(test_loss, "Test")
-    util.print_accuracy(test_accuracy, "Test")
-    test_result = os.path.join(opt.test_dir, "result.txt")
-    with open(test_result, 'w') as t:
-        for index, item in enumerate(test_accuracy):
-            t.write("Attribute %d:\n" %(index))
-            for top_k, value in item.iteritems():
-                t.write("----Accuracy of Top%d: %f\n" %(top_k, value["ratio"]))  
-    print "#################Finished Testing################"
+    logging.info("data_dir:   " + opt.data_dir + "/TestSet/")
+    logging.info("state_dict: " + opt.model_dir + "/" + opt.checkpoint_name)
+    logging.info("score_thres:"+  str(opt.score_thres))
+    for index, item in enumerate(test_accuracy):
+        logging.info("Attribute %d:" %(index))
+        for top_k, value in item.iteritems():
+            logging.info("----Accuracy of Top%d: %f" %(top_k, value["ratio"])) 
+    logging.info("#################Finished Testing################")
 
 def train(model, criterion, train_set, val_set, opt, labels=None):
     # define web visualizer using visdom
@@ -165,11 +164,11 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
     # record forward and backward times 
     train_batch_num = len(train_set)
     total_batch_iter = 0
-    print "####################Train Model###################"
+    logging.info("####################Train Model###################")
     for epoch in range(opt.sum_epoch):
         epoch_start_t = time.time()
         epoch_batch_iter = 0
-        print 'Begin of epoch %d' %(epoch)
+        logging.info('Begin of epoch %d' %(epoch))
         for i, data in enumerate(train_set):
             iter_start_t = time.time()
             # train 
@@ -215,7 +214,7 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
                 webvis.plot_images(image_dict, opt.display_id + 2*opt.class_num, epoch, save_result)
             
             # validate and display validate loss and accuracy
-            if total_batch_iter % opt.display_validate_freq == 0 and len(val_set) > 0:
+            if len(val_set) > 0  and total_batch_iter % opt.display_validate_freq == 0:
                 val_accuracy, val_loss = validate(model, criterion, val_set, opt)
                 x_axis = epoch + float(epoch_batch_iter)/train_batch_num
                 accuracy_list = [val_accuracy[i][opt.top_k[0]]["ratio"] for i in range(len(val_accuracy))]
@@ -227,21 +226,21 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
 
             # save snapshot 
             if total_batch_iter % opt.save_batch_iter_freq == 0:
-                print "saving the latest model (epoch %d, total_batch_iter %d)" %(epoch, total_batch_iter)
+                logging.info("saving the latest model (epoch %d, total_batch_iter %d)" %(epoch, total_batch_iter))
                 util.save_model(model, opt, epoch)
                 # TODO snapshot loss and accuracy
             
-        print('End of epoch %d / %d \t Time Taken: %d sec' %
+        logging.info('End of epoch %d / %d \t Time Taken: %d sec' %
               (epoch, opt.sum_epoch, time.time() - epoch_start_t))
         
-        if epoch % opt.save_epoch_freq:
-            print 'saving the model at the end of epoch %d, iters %d' %(epoch, total_batch_iter)
+        if epoch % opt.save_epoch_freq == 0:
+            logging.info('saving the model at the end of epoch %d, iters %d' %(epoch, total_batch_iter))
             util.save_model(model, opt, epoch) 
 
         # adjust learning rate 
         scheduler.step()
         lr = optimizer.param_groups[0]['lr'] 
-        print('learning rate = %.7f' % lr, 'epoch = %d' %(epoch)) 
+        logging.info('learning rate = %.7f epoch = %d' %(lr,epoch)) 
 
 def _load_model(opt, num_classes):
     # load model
@@ -251,7 +250,8 @@ def _load_model(opt, num_classes):
     tmp_output = templet(tmp_input)
     output_dim = int(tmp_output.size()[-1])
     model = BuildMultiLabelModel(templet, output_dim, num_classes)
-    print model
+    #print model
+    logging.info(model)
     
     # load exsiting model
     if opt.checkpoint_name != "":
@@ -283,6 +283,22 @@ def main():
     op = Options()
     opt = op.parse()
 
+    # log setting 
+    log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    formatter = logging.Formatter(log_format)
+    if opt.mode == "Train":
+        log_path = os.path.join(opt.model_dir, "train.log")
+    else:
+        log_path = os.path.join(opt.test_dir, "test.log")
+    fh = logging.FileHandler(log_path, 'a')
+    fh.setFormatter(formatter)
+    ch = logging.StreamHandler()
+    ch.setFormatter(formatter)
+    logging.getLogger().addHandler(fh)
+    logging.getLogger().addHandler(ch)
+    log_level = logging.INFO
+    logging.getLogger().setLevel(log_level)
+    
     # load train or test data
     data_loader = MultiLabelDataLoader(opt)
     if opt.mode == "Train":
