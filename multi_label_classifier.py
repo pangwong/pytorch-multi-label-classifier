@@ -100,29 +100,29 @@ def _forward_dataset(model, criterion, data_loader, opt):
         sum_batch += 1
         inputs, targets = data
         output, loss, loss_list = _forward(model, criterion, inputs, targets, opt, "Validate")
-        batch_accuracy = _accuracy(output, targets, opt.score_thres, opt.top_k) 
+        batch_accuracy = _accuracy(output, targets, opt.score_thres, opt.top_k)
+        # accumulate accuracy
         if len(accuracy) == 0:
             accuracy = copy.deepcopy(batch_accuracy)
             for index, item in enumerate(batch_accuracy):
                 for k,v in item.iteritems():
                     accuracy[index][k]["ratio"] = v["ratio"]
-            continue
-        for index, item in enumerate(batch_accuracy):
-            for k,v in item.iteritems():
-                accuracy[index][k]["ratio"] += v["ratio"]
-        for item in loss_list:
-            if len(avg_loss) == 0:
-                avg_loss = copy.deepcopy(loss_list) 
-            else:
-                for index, loss in enumerate(loss_list):
-                    avg_loss[index] += loss
+        else:
+            for index, item in enumerate(batch_accuracy):
+                for k,v in item.iteritems():
+                    accuracy[index][k]["ratio"] += v["ratio"]
+        # accumulate loss
+        if len(avg_loss) == 0:
+            avg_loss = copy.deepcopy(loss_list) 
+        else:
+            for index, loss in enumerate(loss_list):
+                avg_loss[index] += loss
     # average on batches
     for index, item in enumerate(accuracy):
         for k,v in item.iteritems():
             accuracy[index][k]["ratio"] /= float(sum_batch)
     for index in range(len(avg_loss)):
         avg_loss[index] /= float(sum_batch)
-
     return accuracy, avg_loss
 
 def validate(model, criterion, val_set, opt):
