@@ -244,8 +244,8 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
 
 def _load_model(opt, num_classes):
     # load model
-    templet = LightCNN_29Layers_v2_templet(opt.input_channel) 
-    #templet = AlexNetTemplet(opt.input_channel)
+    #templet = LightCNN_29Layers_v2_templet(opt.input_channel) 
+    templet = AlexNetTemplet(opt.input_channel)
     tmp_input = Variable(torch.FloatTensor(1, opt.input_channel, opt.input_size, opt.input_size))
     tmp_output = templet(tmp_input)
     output_dim = int(tmp_output.size()[-1])

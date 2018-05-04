@@ -5,8 +5,8 @@ import torch.utils.model_zoo as model_zoo
 __all__ = ['AlexNet', 'alexnet']
 
 
-model_paths = {
-    'alexnet': '/data/image_server/user/wangpeng/pytorch/pretrain_model/alexnet/alexnet-owt-4df8aa71.pth',
+model_urls = {
+    'alexnet': 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth',
 }
 
 
@@ -87,5 +87,5 @@ def alexnet(pretrained=False, **kwargs):
     """
     model = AlexNet(**kwargs)
     if pretrained:
-        model.load_state_dict(model_paths['alexnet'])
+        model.load_state_dict(model_zoo.load_url(model_urls['alexnet']))
     return model
