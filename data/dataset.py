@@ -1,13 +1,14 @@
-import torch.utils.data as data
-import torchvision.transforms as transforms
-import json
 import os
-import os.path as osp
 import cv2
 import copy
+import json
 import random
-from PIL import Image
+import logging
+import torch.utils.data as data
+import torchvision.transforms as transforms
+import os.path as osp
 import matplotlib.pyplot as plt
+from PIL import Image
 
 class BaseDataset(data.Dataset):
     def __init__(self, opt, data_type, id2rid):
@@ -55,8 +56,10 @@ class BaseDataset(data.Dataset):
                 line = json.loads(line)
                 dataset.append(self._read(line))
         if self.opt.shuffle:
-            print "Shuffle %s Data" %(self.data_type)
+            logging.info("Shuffle %s Data" %(self.data_type))
             random.shuffle(dataset)
+        else:
+            logging.info("Not Shuffle %s Data" %(self.data_type))
         return dataset
     
     def _get_transformer(self):

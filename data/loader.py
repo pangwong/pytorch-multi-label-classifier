@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import random
+import logging
 import collections 
 import os.path as osp
 from torch.utils.data import DataLoader
@@ -20,7 +21,7 @@ class MultiLabelDataLoader():
         train_dir = opt.data_dir + "/TrainSet/"
         val_dir = opt.data_dir + "/ValidateSet/"
         test_dir = opt.data_dir + "/TestSet/"
-        
+         
         # split data
         if not all([osp.exists(train_dir), osp.exists(val_dir), osp.exists(test_dir)]):
             # rm existing directories
@@ -29,6 +30,7 @@ class MultiLabelDataLoader():
             rmdir(test_dir)
 
             # split data to Train, Val, Test
+            logging.info("Split raw data to Train, Val and Test")
             ratios = opt.ratio
             dataset = collections.defaultdict(list)
             with open(opt.dir + '/data.txt') as d:
@@ -57,12 +59,15 @@ class MultiLabelDataLoader():
         
         # load dataset
         if opt.mode == "Train": 
+            logging.info("Load Train Dataset...")
             self.train_set = BaseDataset(self.opt, "TrainSet", self.rid2id)
+            logging.info("Load Validate Dataset...")
             self.val_set = BaseDataset(self.opt, "ValidateSet", self.rid2id)
         else:
             # force batch_size for test to 1
             self.opt.batch_size = 1
             self.opt.load_thread = 1
+            logging.info("Load Test Dataset...")
             self.test_set = BaseDataset(self.opt, "TestSet", self.rid2id)
 
     def GetTrainSet(self):
