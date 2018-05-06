@@ -18,6 +18,11 @@ class MultiLabelModel(nn.Module):
             outs.append(out)
         return outs
 
+def LoadPretrainedModel(model, pretrained_state_dict):
+    model_dict = model.state_dict()
+    union_dict = {k : v for k,v in pretrained_state_dict.iteritems() if k in model_dict}
+    model_dict.update(union_dict)
+    return model_dict
 
 def BuildMultiLabelModel(basemodel, basemodel_output, num_classes):
     return MultiLabelModel(basemodel, basemodel_output, num_classes)

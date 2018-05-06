@@ -1,12 +1,12 @@
 import torch.nn as nn
 import torch.utils.model_zoo as model_zoo
-
+from build_model import LoadPretrainedModel
 
 __all__ = ['AlexNet', 'alexnet']
 
 
-model_paths = {
-    'alexnet': '/data/image_server/user/wangpeng/pytorch/pretrain_model/alexnet/alexnet-owt-4df8aa71.pth',
+model_urls = {
+    'alexnet': 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth',
 }
 
 
@@ -87,5 +87,17 @@ def alexnet(pretrained=False, **kwargs):
     """
     model = AlexNet(**kwargs)
     if pretrained:
-        model.load_state_dict(model_paths['alexnet'])
+        model.load_state_dict(model_zoo.load_url(model_urls['alexnet']))
+    return model
+
+def AlexnetTemplet(input_channel, pretrained=False, **kwargs):
+    r"""AlexNet model architecture from the
+    `"One weird trick..." <https://arxiv.org/abs/1404.5997>`_ paper.
+    Args:
+        pretrained (bool): If True, returns a model pre-trained on ImageNet
+    """
+    model = AlexNetTemplet(input_channel)
+    if pretrained:
+        model_dict = LoadPretrainedModel(model, model_zoo.load_url(model_urls['alexnet']))
+        model.load_state_dict(model_dict)
     return model

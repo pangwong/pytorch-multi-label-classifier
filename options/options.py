@@ -9,6 +9,7 @@ class Options():
         self.parser.add_argument('--dir', required=True, default='./', help='path to the data directory containing data.txt and label.txt')
         self.parser.add_argument('--name', required=True, default='test', help='subdirectory name for training or testing, snapshot, splited dataset and test results exist here')
         self.parser.add_argument('--mode', required=True, default='Train', help='run mode of training or testing. [Train | Test | train | test]')
+        self.parser.add_argument('--model', required=True, default='alexnet', help='model type. [Alexnet | LightenB | VGG16 | Resnet18 | ...]')
         self.parser.add_argument('--load_size', type=int, default=144, help='scale image to the size prepared for croping')
         self.parser.add_argument('--input_size', type=int, default=128, help='then crop image to the size as network input')
         self.parser.add_argument('--ratio', type=str, default='[0.95, 0.025, 0.025]', help='ratio of whole dataset for Train, Validate, Test resperctively')
@@ -27,6 +28,7 @@ class Options():
         self.parser.add_argument('--std', type=str, default='(1,1,1)', help='sequence standard deviations for each channel used for normization')
         self.parser.add_argument('--padding', action='store_true', help='default false. If true, image will be padded if scaled box is out of image boundary')
         self.parser.add_argument('--checkpoint_name', type=str, default='', help='path to pretrained model or model to deploy')
+        self.parser.add_argument('--pretrain', action='store_true', help='default false. If true, load pretrained model to initizaize model state_dict')
         ## for train
         self.parser.add_argument('--validate_ratio', type=float, default=1, help='ratio of validate set when validate model')
         self.parser.add_argument('--sum_epoch', type=int, default=200, help='sum epoches for training')

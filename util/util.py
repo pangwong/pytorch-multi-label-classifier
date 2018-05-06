@@ -4,11 +4,15 @@ import numpy as np
 import logging
 from PIL import Image
 
-def tensor2im(image_tensor, imtype=np.uint8):
+
+def tensor2im(image_tensor, mean, std, imtype=np.uint8):
     image_numpy = image_tensor.cpu().float().numpy()
     if image_numpy.shape[0] == 1:
         image_numpy = np.tile(image_numpy, (3, 1, 1))
-    image_numpy = (np.transpose(image_numpy, (1, 2, 0))) * 255.0
+    image_numpy = image_numpy.transpose(1, 2, 0)
+    image_numpy *= std
+    image_numpy += mean
+    image_numpy *= 255.0
     return image_numpy.astype(imtype)
 
 def save_image(image_numpy, image_path):
@@ -47,9 +51,9 @@ def print_loss(loss_list, label, epoch=0, batch_iter=0):
 
 def print_accuracy(accuracy_list, label, epoch=0, batch_iter=0):
     if label == "Test":
-        logging.info("[ %s Accuracy ] of Test Dataset:" % (label))
+        logging.info("[ %s Accu ] of Test Dataset:" % (label))
     else:
-        logging.info("[ %s Accuracy ] of Epoch %d Batch %d" %(label, epoch, batch_iter))
+        logging.info("[ %s Accu ] of Epoch %d Batch %d" %(label, epoch, batch_iter))
     
     for index, item in enumerate(accuracy_list):
         for top_k, value in item.iteritems():
