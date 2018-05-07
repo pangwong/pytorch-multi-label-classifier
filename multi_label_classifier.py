@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 import copy
 import random
@@ -13,9 +14,11 @@ from collections import OrderedDict, defaultdict
 
 from data.loader import MultiLabelDataLoader
 from options.options import Options
-from models.build_model import BuildMultiLabelModel
+from models.build_model import BuildMultiLabelModel, LoadPretrainedModel
 from models.lightcnn import LightCNN_29Layers_v2_templet 
-from models.alexnet import AlexNetTemplet
+from models.alexnet import AlexnetTemplet
+from models.resnet import Resnet18Templet
+from models.vgg import VGG16Templet
 from util import util 
 from util.webvisualizer import WebVisualizer
 
@@ -201,7 +204,7 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
                 image_list = list()
                 show_image_num = int(np.ceil(opt.display_image_ratio * inputs.size()[0]))
                 for index in range(show_image_num): 
-                    input_im = util.tensor2im(inputs[index])
+                    input_im = util.tensor2im(inputs[index], opt.mean, opt.std)
                     class_label = "Image_" + str(index) 
                     if labels is not None:
                         target_ids = [targets[i][index] for i in range(opt.class_num)]
@@ -244,8 +247,17 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
 
 def _load_model(opt, num_classes):
     # load model
-    #templet = LightCNN_29Layers_v2_templet(opt.input_channel) 
-    templet = AlexNetTemplet(opt.input_channel)
+    if opt.model == "Alexnet":
+        templet = AlexnetTemplet(opt.input_channel, opt.pretrain)
+    elif opt.model == "LightenB":
+        templet = LightCNN_29Layers_v2_templet(opt.input_channel, opt.pretrain)
+    elif opt.model == "Resnet18":
+        templet = Resnet18Templet(opt.input_channel, opt.pretrain)
+    elif opt.model == "VGG16":
+        templet = VGG16Templet(opt.input_channel, opt.pretrain)
+    else:
+        logging.error("unknown model type")
+        sys.exit(0)
     tmp_input = Variable(torch.FloatTensor(1, opt.input_channel, opt.input_size, opt.input_size))
     tmp_output = templet(tmp_input)
     output_dim = int(tmp_output.size()[-1])
@@ -253,12 +265,19 @@ def _load_model(opt, num_classes):
     #print model
     logging.info(model)
     
+    # imagenet pretrain model
+    if opt.pretrain:
+        logging.info("use pretrained model")
     # load exsiting model
     if opt.checkpoint_name != "":
         if os.path.exists(opt.checkpoint_name):
-            model.load_state_dict(torch.load(opt.checkpoint_name))
+            model_dict = LoadPretrainModel(model, torch.load(opt.checkpoint_name))
+            model.load_state_dict(model_dict)
+            logging.info("load checkpoint from "+opt.checkpoint_name)
         else:
-            model.load_state_dict(torch.load(opt.model_dir + "/" + opt.checkpoint_name))
+            model_dict = LoadPretrainModel(model, torch.load(opt.model_dir + "/" + opt.checkpoint_name))
+            model.load_state_dict(model_dict)
+            logging.info("load checkpoint from "+opt.model_dir + "/" +opt.checkpoint_name)
     return model
 
 

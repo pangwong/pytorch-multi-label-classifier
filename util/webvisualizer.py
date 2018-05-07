@@ -42,12 +42,12 @@ class WebVisualizer():
     phase: [Train | Validate | Test]
     """
     def plot_points(self, x, y, data_type, phase):
+        line_name = data_type + "@" + phase
         self.plot_data[data_type][phase].append((x,y))
-        # if not initialized
+        # draw ininial line objects if not initialized
         if len(self.win_info[data_type][phase]) == 0:
             for index in range(len(y)):
                 win_id = self.type2id[data_type]*len(y) + index
-                name = data_type + "@" + phase
                 win = self.vis.line(X=np.array([0]),
                                     Y=np.array([0]),
                                     opts=dict(
@@ -58,16 +58,15 @@ class WebVisualizer():
                                         width=900,
                                         height=450),
                                     win=win_id,
-                                    name=name)
+                                    name=line_name)
                 self.win_info[data_type][phase].append(win)
         
         for index, value in enumerate(y): 
             win_id = self.win_info[data_type][phase][index] 
-            name = data_type + "@" + phase
             self.vis.line(X=np.array([x]),
                           Y=np.array([value]),
                           win=win_id,
-                          name=name,
+                          name=line_name,
                           update="append")
     
     def plot_images(self, image_dict, start_display_id, epoch, save_result):
