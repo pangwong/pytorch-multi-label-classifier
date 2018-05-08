@@ -7,4 +7,5 @@ test/visual/
 visual/
 test_batch_cam.py
 run
+run_cam.py
 *.pyc

@@ -271,11 +271,11 @@ def _load_model(opt, num_classes):
     # load exsiting model
     if opt.checkpoint_name != "":
         if os.path.exists(opt.checkpoint_name):
-            model_dict = LoadPretrainModel(model, torch.load(opt.checkpoint_name))
+            model_dict = LoadPretrainedModel(model, torch.load(opt.checkpoint_name))
             model.load_state_dict(model_dict)
             logging.info("load checkpoint from "+opt.checkpoint_name)
         else:
-            model_dict = LoadPretrainModel(model, torch.load(opt.model_dir + "/" + opt.checkpoint_name))
+            model_dict = LoadPretrainedModel(model, torch.load(opt.model_dir + "/" + opt.checkpoint_name))
             model.load_state_dict(model_dict)
             logging.info("load checkpoint from "+opt.model_dir + "/" +opt.checkpoint_name)
     return model
