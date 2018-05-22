@@ -230,7 +230,7 @@ def LightCNN_29Layers_v2(**kwargs):
     model = network_29layers_v2(resblock, [1, 2, 3, 4], **kwargs)
     return model
 
-def LightCNN_29Layers_v2_templet(in_channel):
+def LightCNN_29Layers_v2_templet(in_channel, pretrained=False):
     model = network_29layers_v2_templet(in_channel, resblock, [1,2,3,4])
     return model
 

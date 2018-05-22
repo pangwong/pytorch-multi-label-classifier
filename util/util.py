@@ -1,7 +1,8 @@
 import os
-import torch
+import copy
 import numpy as np
 import logging
+import collections
 from PIL import Image
 
 
@@ -18,12 +19,6 @@ def tensor2im(image_tensor, mean, std, imtype=np.uint8):
 def save_image(image_numpy, image_path):
     image_pil = Image.fromarray(image_numpy)
     image_pil.save(image_path)
-
-def save_model(model, opt, epoch):
-    checkpoint_name = opt.model_dir + "/epoch_%s_snapshot.pth" %(epoch)
-    torch.save(model.cpu().state_dict(), checkpoint_name)
-    if opt.cuda and torch.cuda.is_available():
-        model.cuda(opt.devices[0])
 
 def mkdirs(paths):
     if isinstance(paths, list) and not isinstance(paths, str):
@@ -58,3 +53,48 @@ def print_accuracy(accuracy_list, label, epoch=0, batch_iter=0):
     for index, item in enumerate(accuracy_list):
         for top_k, value in item.iteritems():
             logging.info("----Attribute %d Top%d: %f" %(index, top_k, value["ratio"]))
+
+def opt2file(opt, dst_file):
+    args = vars(opt) 
+    with open(dst_file, 'wt') as opt_file:
+        opt_file.write('------------ Options -------------\n')
+        print '------------ Options -------------'
+        for k, v in sorted(args.items()):
+            opt_file.write('%s: %s\n' % (str(k), str(v)))
+            print "%s: %s" %(str(k), str(v))
+        opt_file.write('-------------- End ----------------\n')
+        print '-------------- End ----------------'
+
+def load_label(label_file):
+    rid2name = list()   # rid: real id, same as the id in label.txt
+    id2rid = list()     # id: number from 0 to len(rids)-1 corresponding to the order of rids
+    rid2id = list()     
+    with open(label_file) as l:
+        rid2name_dict = collections.defaultdict(str)
+        id2rid_dict = collections.defaultdict(str)
+        rid2id_dict = collections.defaultdict(str)
+        new_id = 0 
+        for line in l.readlines():
+            line = line.strip('\n\r').split(';')
+            if len(line) == 3: # attr description
+                if len(rid2name_dict) != 0:
+                    rid2name.append(rid2name_dict)
+                    id2rid.append(id2rid_dict)
+                    rid2id.append(rid2id_dict)
+                    rid2name_dict = collections.defaultdict(str)
+                    id2rid_dict = collections.defaultdict(str)
+                    rid2id_dict = collections.defaultdict(str)
+                    new_id = 0
+                rid2name_dict["__name__"] = line[2]
+                rid2name_dict["__attr_id__"] = line[1]
+            elif len(line) == 2: # attr value description
+                rid2name_dict[line[0]] = line[1]
+                id2rid_dict[new_id] = line[0]
+                rid2id_dict[line[0]] = new_id
+                new_id += 1
+        if len(rid2name_dict) != 0:
+            rid2name.append(rid2name_dict)
+            id2rid.append(id2rid_dict)
+            rid2id.append(rid2id_dict)
+    return rid2name, id2rid, rid2id
+

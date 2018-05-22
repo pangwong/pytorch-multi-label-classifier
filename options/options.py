@@ -21,8 +21,8 @@ class Options():
         self.parser.add_argument('--crop', type=str, default='CenterCrop', help='crop type, candidates are [NoCrop | RandomCrop | CenterCrop | FiveCrop | TenCrop]')
         self.parser.add_argument('--gray', action='store_true', help='defalut false. If true, image will be converted to gray_scale')
         self.parser.add_argument('--gpu_ids', type=str, default='-1', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
-        self.parser.add_argument('--box_ratio', type=float, default=1.0, help='modify box ratio of width and height to specified ratio')
-        self.parser.add_argument('--box_scale', type=float, default=1.1, help='scale box to specified ratio')
+        self.parser.add_argument('--box_ratio', type=float, default=-1, help='modify box ratio of width and height to specified ratio')
+        self.parser.add_argument('--box_scale', type=float, default=-1, help='scale box to specified ratio')
         self.parser.add_argument('--input_channel', type=int, default=3, help='set input image channel, 1 for gray and 3 for color')
         self.parser.add_argument('--mean', type=str, default='(0,0,0)', help='sequence of means for each channel used for normization')
         self.parser.add_argument('--std', type=str, default='(1,1,1)', help='sequence standard deviations for each channel used for normization')
@@ -46,7 +46,10 @@ class Options():
 
         ## for test
         self.parser.add_argument('--top_k', type=str, default='(1,)', help='tuple. We only take top k classification results into accuracy consideration')
-        self.parser.add_argument('--score_thres', type=str, default=0.0, help='float or list. We only take classification results whose score is bigger than score_thres into recall consideration')
+        self.parser.add_argument('--score_thres', type=str, default='0.0', help='float or list. We only take classification results whose score is bigger than score_thres into recall consideration')
+        # these tow param below used only in deploy.py
+        self.parser.add_argument('--label_file', type=str, default="", help='label file only for deploy a checkpoint model')
+        self.parser.add_argument('--data_dir', type=str, default="", help='directory where data.txt to be classified exists')
         
         ## for visualization
         self.parser.add_argument('--display_winsize', type=int, default=128, help='display window size')
@@ -63,20 +66,14 @@ class Options():
     def parse(self):
         opt = self.parser.parse_args()
         
-        # model dir
-        trainer_dir = "trainer_" + opt.name
-        opt.model_dir = os.path.join(opt.dir, trainer_dir, "Train") 
-        opt.data_dir = os.path.join(opt.dir, trainer_dir, "Data") 
-        opt.test_dir = os.path.join(opt.dir, trainer_dir, "Test") 
-        
-        # TODO handle condition when destinate directory exists
-        if not os.path.exists(opt.model_dir):
-            os.makedirs(opt.model_dir)
-        if not os.path.exists(opt.data_dir):
-            os.makedirs(opt.data_dir)
-        if not os.path.exists(opt.test_dir):
-            os.makedirs(opt.test_dir)
-        
+        # mode
+        if opt.mode not in ["Train", "Test", "train", "test"]:
+            raise Exception("cannot recognize flag `mode`")
+        opt.mode = opt.mode.capitalize()
+        if opt.mode == "Test":
+            opt.batch_size = 1
+            opt.shuffle = False
+
         # devices id
         gpu_ids = opt.gpu_ids.split(',')
         opt.devices = []
@@ -88,10 +85,6 @@ class Options():
         if len(opt.devices) > 0 and torch.cuda.is_available():
             opt.cuda = True
 
-        # mode
-        if opt.mode not in ["Train", "Test", "train", "test"]:
-            raise Exception("cannot recognize flag `mode`")
-        opt.mode = opt.mode.capitalize()
 
         opt.top_k = eval(opt.top_k)
         opt.mean = eval(opt.mean)
@@ -101,18 +94,6 @@ class Options():
             opt.loss_weight=None
         else:
             opt.loss_weight = torch.FloatTensor(eval(opt.loss_weight))
-
-        # save options to disk and print
-        args = vars(opt) 
-        file_name = os.path.join(opt.model_dir, 'opt.txt')
-        with open(file_name, 'wt') as opt_file:
-            opt_file.write('------------ Options -------------\n')
-            print '------------ Options -------------'
-            for k, v in sorted(args.items()):
-                opt_file.write('%s: %s\n' % (str(k), str(v)))
-                print "%s: %s" %(str(k), str(v))
-            opt_file.write('-------------- End ----------------\n')
-            print '-------------- End ----------------'
 
         return opt
 

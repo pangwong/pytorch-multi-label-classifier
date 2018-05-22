@@ -4,13 +4,11 @@ import json
 import random
 import logging
 import collections 
-import os.path as osp
 from torch.utils.data import DataLoader
 
 from dataset import BaseDataset
 sys.path.append('../')
-from util.util import rmdir
-
+from util.util import rmdir, load_label
 
 class MultiLabelDataLoader():
     def __init__(self, opt):
@@ -23,7 +21,7 @@ class MultiLabelDataLoader():
         test_dir = opt.data_dir + "/TestSet/"
          
         # split data
-        if not all([osp.exists(train_dir), osp.exists(val_dir), osp.exists(test_dir)]):
+        if not all([os.path.exists(train_dir), os.path.exists(val_dir), os.path.exists(test_dir)]):
             # rm existing directories
             rmdir(train_dir)
             rmdir(val_dir)
@@ -54,7 +52,7 @@ class MultiLabelDataLoader():
             self._WriteDataToFile(dataset["Validate"], val_dir)
             self._WriteDataToFile(dataset["Test"], test_dir)
         
-        self.rid2name, self.id2rid, self.rid2id = self._LoadLabel(opt.dir + '/label.txt')
+        self.rid2name, self.id2rid, self.rid2id = load_label(opt.dir + '/label.txt')
         self.num_classes = [len(item)-2 for item in self.rid2name]
         
         # load dataset
@@ -104,7 +102,7 @@ class MultiLabelDataLoader():
         """
             write info of each objects to data.txt as predefined format
         """
-        if not osp.exists(dst_dir):
+        if not os.path.exists(dst_dir):
             os.mkdir(dst_dir)
         with open(dst_dir + "/data.txt", 'w') as d:
             for line in src_data:
@@ -124,39 +122,3 @@ class MultiLabelDataLoader():
             drop_last=False)
         return dataloader
 
-
-    def _LoadLabel(self, label_file):
-        """
-            parse label.txt as predefined format
-        """
-        rid2name = list()   # rid: real id, same as the id in label.txt
-        id2rid = list()     # id: number from 0 to len(rids)-1 corresponding to the order of rids
-        rid2id = list()     
-        with open(label_file) as l:
-            rid2name_dict = collections.defaultdict(str)
-            id2rid_dict = collections.defaultdict(str)
-            rid2id_dict = collections.defaultdict(str)
-            new_id = 0 
-            for line in l.readlines():
-                line = line.strip('\n\r').split(';')
-                if len(line) == 3: # attr description
-                    if len(rid2name_dict) != 0:
-                        rid2name.append(rid2name_dict)
-                        id2rid.append(id2rid_dict)
-                        rid2id.append(rid2id_dict)
-                        rid2name_dict = collections.defaultdict(str)
-                        id2rid_dict = collections.defaultdict(str)
-                        rid2id_dict = collections.defaultdict(str)
-                        new_id = 0
-                    rid2name_dict["__name__"] = line[2]
-                    rid2name_dict["__attr_id__"] = line[1]
-                elif len(line) == 2: # attr value description
-                    rid2name_dict[line[0]] = line[1]
-                    id2rid_dict[new_id] = line[0]
-                    rid2id_dict[line[0]] = new_id
-                    new_id += 1
-            if len(rid2name_dict) != 0:
-                rid2name.append(rid2name_dict)
-                id2rid.append(id2rid_dict)
-                rid2id.append(rid2id_dict)
-        return rid2name, id2rid, rid2id

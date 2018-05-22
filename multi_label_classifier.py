@@ -13,25 +13,23 @@ from torch.autograd import Variable
 from collections import OrderedDict, defaultdict
 
 from data.loader import MultiLabelDataLoader
+from models.model import load_model, save_model, modify_last_layer_lr
 from options.options import Options
-from models.build_model import BuildMultiLabelModel, LoadPretrainedModel
-from models.lightcnn import LightCNN_29Layers_v2_templet 
-from models.alexnet import AlexnetTemplet
-from models.resnet import Resnet18Templet
-from models.vgg import VGG16Templet
 from util import util 
 from util.webvisualizer import WebVisualizer
 
 
-def _forward(model, criterion, inputs, targets, opt, phase):
+def forward_batch(model, criterion, inputs, targets, opt, phase):
     if opt.cuda:
         inputs = inputs.cuda(opt.devices[0], async=True)
 
     if phase in ["Train"]:
         inputs_var = Variable(inputs, requires_grad=True)
+        logging.info("Switch to Train Mode")
         model.train()
     elif phase in ["Validate", "Test"]:
         inputs_var = Variable(inputs, volatile=True)
+        logging.info("Switch to Test Mode")
         model.eval()
         
     # forward
@@ -61,37 +59,7 @@ def _forward(model, criterion, inputs, targets, opt, phase):
     return output, loss, loss_list
 
 
-def _accuracy(outputs, targets, score_thres, top_k=(1,)):
-    max_k = max(top_k)
-    accuracy = []
-    thres_list = eval(score_thres)
-    if isinstance(thres_list, float) or isinstance(thres_list, int) :
-        thres_list = [eval(score_thres)]*len(targets)
-
-    for i in range(len(targets)):
-        target = targets[i]
-        output = outputs[i].data
-        batch_size = output.size(0)
-        curr_k = min(max_k, output.size(1))
-        top_value, index = output.cpu().topk(curr_k, 1)
-        index = index.t()
-        top_value = top_value.t()
-        correct = index.eq(target.cpu().view(1,-1).expand_as(index))
-        mask = (top_value>=thres_list[i])
-        correct = correct*(mask)
-        #print "masked correct: ", correct
-        res = defaultdict(dict)
-        for k in top_k:
-            k = min(k, output.size(1))
-            correct_k = correct[:k].view(-1).float().sum(0)[0]
-            res[k]["s"] = batch_size
-            res[k]["r"] = correct_k
-            res[k]["ratio"] = float(correct_k)/batch_size
-        accuracy.append(res)
-    return accuracy
-
-
-def _forward_dataset(model, criterion, data_loader, opt):
+def forward_dataset(model, criterion, data_loader, opt):
     sum_batch = 0 
     accuracy = list()
     avg_loss = list()
@@ -103,8 +71,8 @@ def _forward_dataset(model, criterion, data_loader, opt):
             logging.info("test %s/%s image" %(i, len(data_loader)))
         sum_batch += 1
         inputs, targets = data
-        output, loss, loss_list = _forward(model, criterion, inputs, targets, opt, "Validate")
-        batch_accuracy = _accuracy(output, targets, opt.score_thres, opt.top_k)
+        output, loss, loss_list = forward_batch(model, criterion, inputs, targets, opt, "Validate")
+        batch_accuracy = calc_accuracy(output, targets, opt.score_thres, opt.top_k)
         # accumulate accuracy
         if len(accuracy) == 0:
             accuracy = copy.deepcopy(batch_accuracy)
@@ -130,27 +98,43 @@ def _forward_dataset(model, criterion, data_loader, opt):
         avg_loss[index] /= float(sum_batch)
     return accuracy, avg_loss
 
-def validate(model, criterion, val_set, opt):
-    return _forward_dataset(model, criterion, val_set, opt)
 
-def test(model, criterion, test_set, opt):
-    logging.info("####################Test Model###################")
-    test_accuracy, test_loss = _forward_dataset(model, criterion, test_set, opt)
-    logging.info("data_dir:   " + opt.data_dir + "/TestSet/")
-    logging.info("state_dict: " + opt.model_dir + "/" + opt.checkpoint_name)
-    logging.info("score_thres:"+  str(opt.score_thres))
-    for index, item in enumerate(test_accuracy):
-        logging.info("Attribute %d:" %(index))
-        for top_k, value in item.iteritems():
-            logging.info("----Accuracy of Top%d: %f" %(top_k, value["ratio"])) 
-    logging.info("#################Finished Testing################")
+def calc_accuracy(outputs, targets, score_thres, top_k=(1,)):
+    max_k = max(top_k)
+    accuracy = []
+    thres_list = eval(score_thres)
+    if isinstance(thres_list, float) or isinstance(thres_list, int) :
+        thres_list = [eval(score_thres)]*len(targets)
+
+    for i in range(len(targets)):
+        target = targets[i]
+        output = outputs[i].data
+        batch_size = output.size(0)
+        curr_k = min(max_k, output.size(1))
+        top_value, index = output.cpu().topk(curr_k, 1)
+        index = index.t()
+        top_value = top_value.t()
+        correct = index.eq(target.cpu().view(1,-1).expand_as(index))
+        mask = (top_value>=thres_list[i])
+        correct = correct*mask
+        #print "masked correct: ", correct
+        res = defaultdict(dict)
+        for k in top_k:
+            k = min(k, output.size(1))
+            correct_k = correct[:k].view(-1).float().sum(0)[0]
+            res[k]["s"] = batch_size
+            res[k]["r"] = correct_k
+            res[k]["ratio"] = float(correct_k)/batch_size
+        accuracy.append(res)
+    return accuracy
+
 
 def train(model, criterion, train_set, val_set, opt, labels=None):
     # define web visualizer using visdom
     webvis = WebVisualizer(opt)
     
     # modify learning rate of last layer
-    finetune_params = _modify_last_layer_lr(model.named_parameters(), 
+    finetune_params = modify_last_layer_lr(model.named_parameters(), 
                                             opt.lr, opt.lr_mult_w, opt.lr_mult_b)
     # define optimizer
     optimizer = optim.SGD(finetune_params, 
@@ -176,7 +160,7 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
             iter_start_t = time.time()
             # train 
             inputs, targets = data
-            output, loss, loss_list = _forward(model, criterion, inputs, targets, opt, "Train")
+            output, loss, loss_list = forward_batch(model, criterion, inputs, targets, opt, "Train")
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
@@ -188,7 +172,7 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
             # display train loss and accuracy
             if total_batch_iter % opt.display_train_freq == 0:
                 # accuracy
-                batch_accuracy = _accuracy(output, targets, opt.score_thres, opt.top_k) 
+                batch_accuracy = calc_accuracy(output, targets, opt.score_thres, opt.top_k) 
                 util.print_loss(loss_list, "Train", epoch, total_batch_iter)
                 util.print_accuracy(batch_accuracy, "Train", epoch, total_batch_iter)
                 if opt.display_id > 0:
@@ -230,7 +214,7 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
             # save snapshot 
             if total_batch_iter % opt.save_batch_iter_freq == 0:
                 logging.info("saving the latest model (epoch %d, total_batch_iter %d)" %(epoch, total_batch_iter))
-                util.save_model(model, opt, epoch)
+                save_model(model, opt, epoch)
                 # TODO snapshot loss and accuracy
             
         logging.info('End of epoch %d / %d \t Time Taken: %d sec' %
@@ -238,77 +222,60 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
         
         if epoch % opt.save_epoch_freq == 0:
             logging.info('saving the model at the end of epoch %d, iters %d' %(epoch, total_batch_iter))
-            util.save_model(model, opt, epoch) 
+            save_model(model, opt, epoch) 
 
         # adjust learning rate 
         scheduler.step()
         lr = optimizer.param_groups[0]['lr'] 
         logging.info('learning rate = %.7f epoch = %d' %(lr,epoch)) 
-
-def _load_model(opt, num_classes):
-    # load model
-    if opt.model == "Alexnet":
-        templet = AlexnetTemplet(opt.input_channel, opt.pretrain)
-    elif opt.model == "LightenB":
-        templet = LightCNN_29Layers_v2_templet(opt.input_channel, opt.pretrain)
-    elif opt.model == "Resnet18":
-        templet = Resnet18Templet(opt.input_channel, opt.pretrain)
-    elif opt.model == "VGG16":
-        templet = VGG16Templet(opt.input_channel, opt.pretrain)
-    else:
-        logging.error("unknown model type")
-        sys.exit(0)
-    tmp_input = Variable(torch.FloatTensor(1, opt.input_channel, opt.input_size, opt.input_size))
-    tmp_output = templet(tmp_input)
-    output_dim = int(tmp_output.size()[-1])
-    model = BuildMultiLabelModel(templet, output_dim, num_classes)
-    #print model
-    logging.info(model)
-    
-    # imagenet pretrain model
-    if opt.pretrain:
-        logging.info("use pretrained model")
-    # load exsiting model
-    if opt.checkpoint_name != "":
-        if os.path.exists(opt.checkpoint_name):
-            model_dict = LoadPretrainedModel(model, torch.load(opt.checkpoint_name))
-            model.load_state_dict(model_dict)
-            logging.info("load checkpoint from "+opt.checkpoint_name)
-        else:
-            model_dict = LoadPretrainedModel(model, torch.load(opt.model_dir + "/" + opt.checkpoint_name))
-            model.load_state_dict(model_dict)
-            logging.info("load checkpoint from "+opt.model_dir + "/" +opt.checkpoint_name)
-    return model
+    logging.ingo("--------Optimization Done--------")
 
 
-def _modify_last_layer_lr(named_params, base_lr, lr_mult_w, lr_mult_b):
-    params = list()
-    for name, param in named_params: 
-        if 'bias' in name:
-            if 'FullyConnectedLayer_' in name:
-                params += [{'params':param, 'lr': base_lr * lr_mult_b, 'weight_decay': 0}]
-            else:
-                params += [{'params':param, 'lr': base_lr * 2, 'weight_decay': 0}]
-        else:
-            if 'FullyConnectedLayer_' in name:
-                params += [{'params':param, 'lr': base_lr * lr_mult_w}]
-            else:
-                params += [{'params':param, 'lr': base_lr * 1}]
-    return params
-    
+def validate(model, criterion, val_set, opt):
+    return forward_dataset(model, criterion, val_set, opt)
+
+
+def test(model, criterion, test_set, opt):
+    logging.info("####################Test Model###################")
+    test_accuracy, test_loss = forward_dataset(model, criterion, test_set, opt)
+    logging.info("data_dir:   " + opt.data_dir + "/TestSet/")
+    logging.info("score_thres:"+  str(opt.score_thres))
+    for index, item in enumerate(test_accuracy):
+        logging.info("Attribute %d:" %(index))
+        for top_k, value in item.iteritems():
+            logging.info("----Accuracy of Top%d: %f" %(top_k, value["ratio"])) 
+    logging.info("#################Finished Testing################")
+
 
 def main():
-    # parse option 
+    # parse options 
     op = Options()
     opt = op.parse()
 
+    # initialize train or test working dir
+    trainer_dir = "trainer_" + opt.name
+    opt.model_dir = os.path.join(opt.dir, trainer_dir, "Train") 
+    opt.data_dir = os.path.join(opt.dir, trainer_dir, "Data") 
+    opt.test_dir = os.path.join(opt.dir, trainer_dir, "Test") 
+    if not os.path.exists(opt.data_dir):
+        os.makedirs(opt.data_dir)
+    if opt.mode == "Train":
+        if not os.path.exists(opt.model_dir):        
+            os.makedirs(opt.model_dir)
+        log_dir = opt.model_dir 
+        log_path = log_dir + "/train.log"
+    if opt.mode == "Test":
+        if not os.path.exists(opt.test_dir):
+            os.makedirs(opt.test_dir)
+        log_dir = opt.test_dir
+        log_path = log_dir + "/test.log"
+
+    # save options to disk
+    util.opt2file(opt, log_dir+"/opt.txt")
+    
     # log setting 
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     formatter = logging.Formatter(log_format)
-    if opt.mode == "Train":
-        log_path = os.path.join(opt.model_dir, "train.log")
-    else:
-        log_path = os.path.join(opt.test_dir, "test.log")
     fh = logging.FileHandler(log_path, 'a')
     fh.setFormatter(formatter)
     ch = logging.StreamHandler()
@@ -332,21 +299,22 @@ def main():
     opt.class_num = len(num_classes)
 
     # load model
-    model = _load_model(opt, num_classes)
+    model = load_model(opt, num_classes)
 
     # define loss function
     criterion = nn.CrossEntropyLoss(weight=opt.loss_weight) 
-
+    
+    # use cuda
     if opt.cuda:
         model = model.cuda(opt.devices[0])
         criterion = criterion.cuda(opt.devices[0])
         cudnn.benchmark = True
     
+    # Train model
     if opt.mode == "Train":
-        # Train model
         train(model, criterion, train_set, val_set, opt, (rid2name, id2rid))
+    # Test model
     elif opt.mode == "Test":
-        # Test model
         test(model, criterion, test_set, opt)
 
 
