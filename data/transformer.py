@@ -38,6 +38,8 @@ def get_transformer(opt):
     return transforms.Compose(transform_list)
 
 def fix_box(box, width, height, ratio=-1, scale=1.0):
+    if scale < 0:
+        scale = 1.0
     box = copy.deepcopy(box)
     w = box["w"]
     h = box["h"]

@@ -7,7 +7,6 @@ import torch.backends.cudnn as cudnn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from torchvision import transforms
-from PIL import Image
 from collections import OrderedDict, defaultdict
 
 from options.options import Options

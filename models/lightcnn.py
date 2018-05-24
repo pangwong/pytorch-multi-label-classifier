@@ -172,6 +172,28 @@ class network_29layers_v2(nn.Module):
 
         return output, fc
 
+class network_9layers_templet(nn.Module):
+    def __init__(self, in_channel):
+        super(network_9layers_templet, self).__init__()
+        self.features = nn.Sequential(
+            mfm(in_channel, 48, 5, 1, 2), 
+            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True), 
+            group(48, 96, 3, 1, 1), 
+            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
+            group(96, 192, 3, 1, 1),
+            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True), 
+            group(192, 128, 3, 1, 1),
+            group(128, 128, 3, 1, 1),
+            nn.MaxPool2d(kernel_size=2, stride=2, ceil_mode=True),
+            )
+        self.fc1 = mfm(8*8*128, 256, type=0)
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.fc1(x)
+        out = F.dropout(x, training=self.training)
+        return out
 
 class network_29layers_v2_templet(nn.Module):
     def __init__(self, in_channel, block, layers):
@@ -228,6 +250,10 @@ def LightCNN_29Layers(**kwargs):
 
 def LightCNN_29Layers_v2(**kwargs):
     model = network_29layers_v2(resblock, [1, 2, 3, 4], **kwargs)
+    return model
+
+def LightCNN_9Layers_templet(in_channel, pretrained=False):
+    model = network_9layers_templet(in_channel)
     return model
 
 def LightCNN_29Layers_v2_templet(in_channel, pretrained=False):

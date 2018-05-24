@@ -22,7 +22,7 @@ class Options():
         self.parser.add_argument('--gray', action='store_true', help='defalut false. If true, image will be converted to gray_scale')
         self.parser.add_argument('--gpu_ids', type=str, default='-1', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
         self.parser.add_argument('--box_ratio', type=float, default=-1, help='modify box ratio of width and height to specified ratio')
-        self.parser.add_argument('--box_scale', type=float, default=-1, help='scale box to specified ratio')
+        self.parser.add_argument('--box_scale', type=float, default=1.0, help='scale box to specified ratio. Default 1.0 means no change')
         self.parser.add_argument('--input_channel', type=int, default=3, help='set input image channel, 1 for gray and 3 for color')
         self.parser.add_argument('--mean', type=str, default='(0,0,0)', help='sequence of means for each channel used for normization')
         self.parser.add_argument('--std', type=str, default='(1,1,1)', help='sequence standard deviations for each channel used for normization')

@@ -4,7 +4,7 @@ import logging
 from torch.autograd import Variable
 
 from .build_model import BuildMultiLabelModel, LoadPretrainedModel
-from .lightcnn import LightCNN_29Layers_v2_templet 
+from .lightcnn import LightCNN_29Layers_v2_templet, LightCNN_9Layers_templet 
 from .alexnet import AlexnetTemplet
 from .resnet import Resnet18Templet
 from .vgg import VGG16Templet
@@ -15,6 +15,8 @@ def load_model(opt, num_classes):
         templet = AlexnetTemplet(opt.input_channel, opt.pretrain)
     elif opt.model == "LightenB":
         templet = LightCNN_29Layers_v2_templet(opt.input_channel, opt.pretrain)
+    elif opt.model == "Lighten9":
+        templet = LightCNN_9Layers_templet(opt.input_channel, opt.pretrain)
     elif opt.model == "Resnet18":
         templet = Resnet18Templet(opt.input_channel, opt.pretrain)
     elif opt.model == "VGG16":

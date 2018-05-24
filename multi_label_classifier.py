@@ -6,6 +6,7 @@ import random
 import logging
 import numpy as np
 import torch
+print "Pytorch Version: ", torch.__version__
 import torch.nn as nn
 import torch.optim as optim
 import torch.backends.cudnn as cudnn
@@ -25,11 +26,11 @@ def forward_batch(model, criterion, inputs, targets, opt, phase):
 
     if phase in ["Train"]:
         inputs_var = Variable(inputs, requires_grad=True)
-        logging.info("Switch to Train Mode")
+        #logging.info("Switch to Train Mode")
         model.train()
     elif phase in ["Validate", "Test"]:
         inputs_var = Variable(inputs, volatile=True)
-        logging.info("Switch to Test Mode")
+        #logging.info("Switch to Test Mode")
         model.eval()
         
     # forward
@@ -221,8 +222,8 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
               (epoch, opt.sum_epoch, time.time() - epoch_start_t))
         
         if epoch % opt.save_epoch_freq == 0:
-            logging.info('saving the model at the end of epoch %d, iters %d' %(epoch, total_batch_iter))
-            save_model(model, opt, epoch) 
+            logging.info('saving the model at the end of epoch %d, iters %d' %(epoch+1, total_batch_iter))
+            save_model(model, opt, epoch+1) 
 
         # adjust learning rate 
         scheduler.step()
