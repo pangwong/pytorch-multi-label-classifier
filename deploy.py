@@ -26,18 +26,18 @@ def main():
     opt.load_thread = 1
 
     # initialize train or test working dir
-    opt.test_dir = os.path.join(opt.data_dir , opt.name)
+    test_dir = os.path.join(opt.classify_dir , opt.name)
     opt.model_dir = opt.dir + "/trainer_" + opt.name + "/Train/"
-    if not os.path.exists(opt.test_dir):
-        os.mkdir(opt.test_dir)
+    if not os.path.exists(test_dir):
+        os.mkdir(test_dir)
 
     # save options to disk
-    opt2file(opt, os.path.join(opt.test_dir, "opt.txt"))
+    opt2file(opt, os.path.join(test_dir, "opt.txt"))
     
     # log setting 
     log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     formatter = logging.Formatter(log_format)
-    fh = logging.FileHandler(opt.test_dir + "/deploy.log", 'a')
+    fh = logging.FileHandler(test_dir + "/deploy.log", 'a')
     fh.setFormatter(formatter)
     ch = logging.StreamHandler()
     ch.setFormatter(formatter)
@@ -63,8 +63,8 @@ def main():
         model = model.cuda(opt.devices[0])
         cudnn.benchmark = True
     
-    l = open(opt.test_dir + "/classify_res_data.txt", 'w')
-    with open(opt.data_dir + "/data.txt") as data:
+    l = open(test_dir + "/classify_res_data.txt", 'w')
+    with open(opt.classify_dir + "/data.txt") as data:
         for num, line in enumerate(data):
             logging.info(str(num+1))
             line = json.loads(line)

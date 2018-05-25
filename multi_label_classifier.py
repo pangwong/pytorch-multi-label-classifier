@@ -91,7 +91,6 @@ def forward_dataset(model, criterion, data_loader, opt):
             for index, loss in enumerate(loss_list):
                 avg_loss[index] += loss
     # average on batches
-    print sum_batch
     for index, item in enumerate(accuracy):
         for k,v in item.iteritems():
             accuracy[index][k]["ratio"] /= float(sum_batch)
@@ -229,7 +228,7 @@ def train(model, criterion, train_set, val_set, opt, labels=None):
         scheduler.step()
         lr = optimizer.param_groups[0]['lr'] 
         logging.info('learning rate = %.7f epoch = %d' %(lr,epoch)) 
-    logging.ingo("--------Optimization Done--------")
+    logging.info("--------Optimization Done--------")
 
 
 def validate(model, criterion, val_set, opt):
@@ -258,6 +257,7 @@ def main():
     opt.model_dir = os.path.join(opt.dir, trainer_dir, "Train") 
     opt.data_dir = os.path.join(opt.dir, trainer_dir, "Data") 
     opt.test_dir = os.path.join(opt.dir, trainer_dir, "Test") 
+    
     if not os.path.exists(opt.data_dir):
         os.makedirs(opt.data_dir)
     if opt.mode == "Train":

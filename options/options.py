@@ -49,7 +49,7 @@ class Options():
         self.parser.add_argument('--score_thres', type=str, default='0.0', help='float or list. We only take classification results whose score is bigger than score_thres into recall consideration')
         # these tow param below used only in deploy.py
         self.parser.add_argument('--label_file', type=str, default="", help='label file only for deploy a checkpoint model')
-        self.parser.add_argument('--data_dir', type=str, default="", help='directory where data.txt to be classified exists')
+        self.parser.add_argument('--classify_dir', type=str, default="", help='directory where data.txt to be classified exists')
         
         ## for visualization
         self.parser.add_argument('--display_winsize', type=int, default=128, help='display window size')
